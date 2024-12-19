@@ -3,12 +3,13 @@ from htmlnode import LeafNode
 
 
 class TextType(Enum):
+    # The order of this Enum determines the order of parsing
     NORMAL = "normal"
     BOLD = "bold"
     ITALIC = "italic"
     CODE = "code"
-    LINKS = "links"
     IMAGES = "images"
+    LINKS = "links"
 
 
 class TextNode:
