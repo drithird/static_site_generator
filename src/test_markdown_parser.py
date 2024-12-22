@@ -1,10 +1,13 @@
+import enum
 from re import I
 import unittest
 
 from textnode import TextNode, TextType
 from markdown_parser import (
+    block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
+    markdown_to_blocks,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
@@ -125,6 +128,115 @@ class Test_text_to_textnodes(unittest.TestCase):
             TextNode("link", TextType.LINKS, "https://boot.dev"),
         ]
         self.assertEqual(nodes, test_answer)
+
+
+test_text = """# Test Markdown Document
+
+## Header Level 2
+
+This is **bold text** and this is *italicized text*.
+
+
+### Links Section
+
+Here's a [link to OpenAI](https://www.openai.com) for testing purposes.
+
+### Images Section
+
+Below is an image placeholder for testing:
+
+![Placeholder Image](https://via.placeholder.com/150 "Placeholder Image")
+
+
+#### Spacing Test
+
+This paragraph is followed by multiple new lines to test formatting robustness.
+
+
+
+
+This paragraph should appear after several blank lines.
+
+
+### Mixed Content
+
+Here is a bullet point list with formatting:
+
+- **Bolded item**
+- *Italicized item*
+
+Here is a numbered list with a link:
+
+1. Visit [OpenAI](https://www.openai.com).
+2. See the image above.
+3. Test **mixed styles** here.
+
+> This is a wise quote
+
+> This is another quote
+
+```
+print("Hello World!")
+```
+
+"""
+
+
+class Test_markdown_to_blocks(unittest.TestCase):
+    def test_block_parse(self):
+        self.maxDiff = None
+        test_answer = [
+            "# Test Markdown Document",
+            "## Header Level 2",
+            "This is **bold text** and this is *italicized text*.",
+            "### Links Section",
+            "Here's a [link to OpenAI](https://www.openai.com) for testing purposes.",
+            "### Images Section",
+            "Below is an image placeholder for testing:",
+            '![Placeholder Image](https://via.placeholder.com/150 "Placeholder Image")',
+            "#### Spacing Test",
+            "This paragraph is followed by multiple new lines to test formatting robustness.",
+            "This paragraph should appear after several blank lines.",
+            "### Mixed Content",
+            "Here is a bullet point list with formatting:",
+            "- **Bolded item**\n- *Italicized item*",
+            "Here is a numbered list with a link:",
+            "1. Visit [OpenAI](https://www.openai.com).\n2. See the image above.\n3. Test **mixed styles** here.",
+            "> This is a wise quote",
+            "> This is another quote",
+            '```print("Hello World!")```',
+        ]
+        blocks = markdown_to_blocks(test_text)
+        for index, block in enumerate(blocks):
+            self.assertAlmostEqual(str(block), str(test_answer[index]))
+
+
+class Test_block_to_blocks(unittest.TestCase):
+    def test_block_to_block(self):
+        test_answer = [
+            "heading",
+            "heading",
+            "paragraph",
+            "heading",
+            "paragraph",
+            "heading",
+            "paragraph",
+            "paragraph",
+            "heading",
+            "paragraph",
+            "paragraph",
+            "heading",
+            "paragraph",
+            "unordered_list",
+            "paragraph",
+            "ordered_list",
+            "quote",
+            "quote",
+            "code",
+        ]
+        blocks = markdown_to_blocks(test_text)
+        for index, block in enumerate(blocks):
+            self.assertEqual(block_to_block_type(block), test_answer[index])
 
 
 if __name__ == "__main__":

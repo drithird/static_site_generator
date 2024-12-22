@@ -3,6 +3,16 @@ from pydoc import TextDoc
 from textnode import TextNode, TextType, text_node_to_html_node
 from htmlnode import LeafNode
 import re
+from enum import Enum
+
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
 
 
 def split_nodes_delimiter(
@@ -109,3 +119,138 @@ def text_to_textnodes(text):
                 new_nodes = split_nodes_image(nodes)
                 nodes = new_nodes
     return nodes
+
+
+def markdown_to_blocks(markdown):
+    new_markdown = markdown.strip()
+    new_markdown = new_markdown.split("\n")
+    block_end = False
+    current_block = []
+    all_blocks = []
+    for line in new_markdown:
+        if len(line) == 0:
+            if block_end == False and len(current_block) > 0:
+                all_blocks.append("\n".join(current_block))
+                current_block = []
+            block_end = True
+            continue
+        block_end = False
+        current_block.append(line.strip())
+    if len(current_block) > 0:
+        all_blocks.append("".join(current_block))
+    return all_blocks
+
+
+def block_to_block_type(single_block):
+    # Heading Block Parsing
+    if single_block[0] == "#":
+        i = 1
+        while True:
+            char = single_block[i]
+            if char == "#":
+                i += 1
+            elif char == " ":
+                return "heading"
+            else:
+                return "paragraph"
+
+    # Code Block Processing
+    elif single_block[0] == "`":
+        ticks = [
+            single_block[1],
+            single_block[2],
+            single_block[-1],
+            single_block[-2],
+            single_block[-3],
+        ]
+        for tick in ticks:
+            if tick != "`":
+                return "paragraph"
+        return "code"
+
+    # Quote Block Processing
+    elif single_block[0] == ">":
+        quotes = single_block.split("\n")
+        for quote in quotes:
+            if quote[0] != ">":
+                return "paragraph"
+        return "quote"
+
+    # Unordered List Block Processing
+    elif single_block[0:2] == "* " or single_block[0:2] == "- ":
+        unordered_list = single_block.split("\n")
+        for item in unordered_list:
+            if item[0:2] != "* " and item[0:2] != "- ":
+                return "paragraph"
+        return "unordered_list"
+
+    # Ordered List Block Processing
+    elif single_block[0] == "1":
+        ordered_list = single_block.split("\n")
+        for item in ordered_list:
+            if not (str(item[0]).isnumeric()) or item[1:3] != ". ":
+                return "paragraph"
+        return "ordered_list"
+
+    else:
+        return "paragraph"
+
+
+text = """# Test Markdown Document
+
+## Header Level 2
+
+This is **bold text** and this is *italicized text*.
+
+
+### Links Section
+
+Here's a [link to OpenAI](https://www.openai.com) for testing purposes.
+
+### Images Section
+
+Below is an image placeholder for testing:
+
+![Placeholder Image](https://via.placeholder.com/150 "Placeholder Image")
+
+
+#### Spacing Test
+
+This paragraph is followed by multiple new lines to test formatting robustness.
+
+
+
+
+This paragraph should appear after several blank lines.
+
+
+### Mixed Content
+
+Here is a bullet point list with formatting:
+
+- **Bolded item**
+- *Italicized item*
+
+Here is a numbered list with a link:
+
+1. Visit [OpenAI](https://www.openai.com).
+2. See the image above.
+3. Test **mixed styles** here.
+
+> This is a wise quote
+
+> This is another quote
+
+```
+print("Hello World!")
+```
+"""
+
+# print(markdown_to_blocks(text))
+
+# blocks = markdown_to_blocks(text)
+# answers = []
+# for block in blocks:
+#    answers.append(block_to_block_type(block))
+
+# print(answers)
