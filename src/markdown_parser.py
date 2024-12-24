@@ -1,18 +1,5 @@
-from enum import Enum
-from pydoc import TextDoc
 from textnode import TextNode, TextType, text_node_to_html_node
-from htmlnode import LeafNode
 import re
-from enum import Enum
-
-
-class BlockType(Enum):
-    PARAGRAPH = "paragraph"
-    HEADING = "heading"
-    CODE = "code"
-    QUOTE = "quote"
-    UNORDERED_LIST = "unordered_list"
-    ORDERED_LIST = "ordered_list"
 
 
 def split_nodes_delimiter(

@@ -1,7 +1,4 @@
-import enum
-from re import I
 import unittest
-
 from textnode import TextNode, TextType
 from markdown_parser import (
     block_to_block_type,
