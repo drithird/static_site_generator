@@ -201,11 +201,11 @@ class Test_markdown_to_blocks(unittest.TestCase):
             "1. Visit [OpenAI](https://www.openai.com).\n2. See the image above.\n3. Test **mixed styles** here.",
             "> This is a wise quote",
             "> This is another quote",
-            '```print("Hello World!")```',
+            '```\nprint("Hello World!")\n```',
         ]
         blocks = markdown_to_blocks(test_text)
         for index, block in enumerate(blocks):
-            self.assertAlmostEqual(str(block), str(test_answer[index]))
+            self.assertEqual(str(block), str(test_answer[index]))
 
 
 class Test_block_to_blocks(unittest.TestCase):

@@ -1,5 +1,6 @@
 from textnode import TextNode, TextType, text_node_to_html_node
 import re
+from pprint import pprint
 
 
 def split_nodes_delimiter(
@@ -19,10 +20,13 @@ def split_nodes_delimiter(
         else:
             new_text = text.split(delimiter)
             for i in range(0, len(new_text)):
+                if new_text[i] == "":
+                    continue
                 if i % 2 == 0:
                     new_nodes.append(TextNode(new_text[i], node.text_type))
                 else:
                     new_nodes.append(TextNode(new_text[i], text_type))
+
     return new_nodes
 
 
@@ -86,25 +90,19 @@ def split_nodes_link(old_nodes):
 
 def text_to_textnodes(text):
     nodes = []
-    for type in TextType:
-        match (type):
-            case TextType.NORMAL:
-                nodes.append(TextNode(text, TextType.NORMAL))
-            case TextType.BOLD:
-                new_nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
-                nodes = new_nodes
-            case TextType.ITALIC:
-                new_nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
-                nodes = new_nodes
-            case TextType.CODE:
-                new_nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
-                nodes = new_nodes
-            case TextType.LINKS:
-                new_nodes = split_nodes_link(nodes)
-                nodes = new_nodes
-            case TextType.IMAGES:
-                new_nodes = split_nodes_image(nodes)
-                nodes = new_nodes
+
+    nodes.append(TextNode(text, TextType.NORMAL))
+    new_nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = new_nodes
+    new_nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    nodes = new_nodes
+    new_nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = new_nodes
+
+    new_nodes = split_nodes_image(nodes)
+    nodes = new_nodes
+    new_nodes = split_nodes_link(nodes)
+    nodes = new_nodes
     return nodes
 
 
@@ -124,7 +122,7 @@ def markdown_to_blocks(markdown):
         block_end = False
         current_block.append(line.strip())
     if len(current_block) > 0:
-        all_blocks.append("".join(current_block))
+        all_blocks.append("\n".join(current_block))
     return all_blocks
 
 
